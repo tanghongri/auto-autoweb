@@ -1,10 +1,14 @@
 package auto.web;
 
+import java.util.concurrent.TimeUnit;
+
 import org.openqa.selenium.By;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 public class App {
@@ -17,13 +21,34 @@ public class App {
 		WebDriver driver = new FirefoxDriver();
 
 		// And now use this to visit Google
-		driver.get("https://www.baidu.com");
+		driver.get("https://www.jd.com");
 		// Alternatively the same thing can be done like this
 		// driver.navigate().to("http://www.google.com");
 
 		// Find the text input element by its name
-		WebElement element = driver.findElement(By.name("wd"));
-
+	
+		WebElement element = null;
+		try {
+			element = driver.findElement(By.cssSelector(".link-login"));
+		} catch (NoSuchElementException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		String stxt=element.getText();
+		if(stxt.indexOf("请登陆")==-1)
+		{//需要登陆
+			element.click();
+			WebDriverWait wait = new WebDriverWait(driver, 20);
+	        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("div.login-tab.login-tab-r")));
+	        driver.findElement(By.cssSelector("div.login-tab.login-tab-r")).click();  
+	        driver.findElement(By.id("loginname")).sendKeys("rige001");
+	        driver.findElement(By.id("nloginpwd")).sendKeys("110120");
+	        driver.findElement(By.id("loginsubmit")).click();
+		}else
+		{
+			System.out.println("log: " + stxt);
+		}
+		System.out.println("log: " + stxt);
 		// Enter something to search for
 		element.sendKeys("Cheese!");
 
