@@ -6,12 +6,22 @@ public enum BrowserEnum {
 	C("text3"), 
 	D("text4");
 
-	private final String text;
-    private BrowserEnum(final String text){
-        this.text=text;
-    }
-    @Override
-    public String toString(){
-        return text;
-    }
+	private final String BrowserName;
+
+	private BrowserEnum(final String BrowserName) {
+		this.BrowserName = BrowserName;
+	}
+
+	public static BrowserEnum fromBrowserName(String BrowserName) {
+		for (BrowserEnum browser : BrowserEnum.values()) {
+			if (browser.getBrowserName().equals(BrowserName)) {
+				return browser;
+			}
+		}
+		return null;
+	}
+
+	public String getBrowserName() {
+		return this.BrowserName;
+	}
 }

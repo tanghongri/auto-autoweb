@@ -11,6 +11,9 @@ import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -23,7 +26,10 @@ public class App {
 		if (LoadSystemConfig() != 0) {
 			return;
 		}
-		
+		Logger logger = LoggerFactory.getLogger(App.class);
+		logger.info("logback 成功了");
+        logger.error("logback 成功了");
+        
 		int test = 1;
 		if (test == 1) {
 			LoadTask mLoadTask = new LoadTask();
