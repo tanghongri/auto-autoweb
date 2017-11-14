@@ -1,10 +1,7 @@
 package auto.web;
 
 public enum BrowserEnum {
-	BROWER_FIREFOX("Mozilla Firefox"), 
-	B("text2"), 
-	C("text3"), 
-	D("text4");
+	BROWER_DEFAULT("Mozilla Firefox"), BROWER_FIREFOX("Mozilla Firefox"), B("text2"), C("text3"), D("text4");
 
 	private final String BrowserName;
 
@@ -18,7 +15,7 @@ public enum BrowserEnum {
 				return browser;
 			}
 		}
-		return null;
+		return BROWER_DEFAULT;
 	}
 
 	public String getBrowserName() {

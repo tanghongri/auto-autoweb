@@ -17,30 +17,23 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.core.util.StatusPrinter;
-
 public class App {
 	private static String sCurPath = "";
 	private static BrowserEnum BrowserType;
+	private static final Logger LOG = LoggerFactory.getLogger(App.class);
+
 	public static void main(String[] args) {
-		
-		Logger logger = LoggerFactory.getLogger("auto.web.App");
-	    logger.debug("Hello world.");
-	 // print internal state
-	    LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
-	    StatusPrinter.print(lc);
+		LOG.info("Starting...");
 		// 初始化系统配置
 		if (LoadSystemConfig() != 0) {
 			return;
 		}
-        
-        
+
 		int test = 1;
 		if (test == 1) {
 			LoadTask mLoadTask = new LoadTask();
 			mLoadTask.LoadFileTask(sCurPath.concat("\\conf\\jd_login.conf"));
-			
+
 		} else {
 			System.setProperty("webdriver.firefox.bin", "C:\\Program Files\\Mozilla Firefox\\firefox.exe");
 			System.setProperty("webdriver.gecko.driver", "C:\\auto\\geckodriver.exe");
@@ -107,13 +100,14 @@ public class App {
 		File ConfigFile = new File(sCurPath.concat("\\conf\\system.conf"));
 		if (ConfigFile.exists()) {
 			if (ConfigFile.isDirectory()) {
-				System.out.println("system.conf is dir：." + sCurPath.concat("\\conf\\system.conf"));
+				LOG.error("system.conf is dir：." + sCurPath.concat("\\conf\\system.conf"));
 				return 1;
 			}
 		} else {
-			System.out.println("system.conf not exists：." + sCurPath.concat("\\conf\\system.conf"));
+			LOG.error("system.conf not exists：." + sCurPath.concat("\\conf\\system.conf"));
 			return 2;
 		}
+		LOG.info("LoadSystemConfig:" + sCurPath.concat("\\conf\\system.conf"));
 		// 加载配置文件json
 		ObjectMapper objectMapper = null;
 		JsonNode node = null;
@@ -123,18 +117,12 @@ public class App {
 			node = objectMapper.readTree(ConfigFile);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
+			LOG.error("json format");
 			e.printStackTrace();
 			return 2;
 		}
 		if (node.has("browser")) {
-			sValue = node.get("browser").toString();
-			switch (sValue) {
-			case "Mozilla Firefox":
-				BrowserType = BrowserEnum.BROWER_FIREFOX;
-				break;
-			default:
-				return 0;
-			}
+			BrowserType = BrowserEnum.fromBrowserName(node.get("browser").asText());
 		} else {
 
 		}
