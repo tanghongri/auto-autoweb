@@ -17,18 +17,24 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.core.util.StatusPrinter;
+
 public class App {
 	private static String sCurPath = "";
 	private static BrowserEnum BrowserType;
-	public static Logger logger = LoggerFactory.getLogger(App.class);
 	public static void main(String[] args) {
+		
+		Logger logger = LoggerFactory.getLogger("auto.web.App");
+	    logger.debug("Hello world.");
+	 // print internal state
+	    LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+	    StatusPrinter.print(lc);
 		// 初始化系统配置
 		if (LoadSystemConfig() != 0) {
 			return;
 		}
-		
-		logger.info("logback 成功了");
-        logger.error("logback 成功了");
+        
         
 		int test = 1;
 		if (test == 1) {
