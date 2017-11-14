@@ -2,6 +2,8 @@ package auto.web;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
@@ -16,11 +18,13 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
 
 public class App {
+	private static final Logger LOG = LoggerFactory.getLogger(App.class);
 	private static String sCurPath = "";
 	private static BrowserEnum BrowserType;
-	private static final Logger LOG = LoggerFactory.getLogger(App.class);
+	public HashMap<String, TaskInfo> commonTask;
 
 	public static void main(String[] args) {
 		LOG.info("Starting...");
@@ -28,7 +32,8 @@ public class App {
 		if (LoadSystemConfig() != 0) {
 			return;
 		}
-
+		//加载通用任务
+		
 		int test = 1;
 		if (test == 1) {
 			LoadTask mLoadTask = new LoadTask();
@@ -111,7 +116,6 @@ public class App {
 		// 加载配置文件json
 		ObjectMapper objectMapper = null;
 		JsonNode node = null;
-		String sValue = "";
 		try {
 			objectMapper = new ObjectMapper();
 			node = objectMapper.readTree(ConfigFile);
@@ -124,7 +128,14 @@ public class App {
 		if (node.has("browser")) {
 			BrowserType = BrowserEnum.fromBrowserName(node.get("browser").asText());
 		} else {
-
+			BrowserType=BrowserEnum.BROWER_DEFAULT;
+		}
+		if (node.has("preload")) {
+			if(JsonNodeType.ARRAY==node.get("preload").getNodeType())
+			{
+				
+			}
+			
 		}
 		return 0;
 	}
