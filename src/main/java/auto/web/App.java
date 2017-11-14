@@ -20,13 +20,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class App {
 	private static String sCurPath = "";
 	private static BrowserEnum BrowserType;
-
+	public static Logger logger = LoggerFactory.getLogger(App.class);
 	public static void main(String[] args) {
 		// 初始化系统配置
 		if (LoadSystemConfig() != 0) {
 			return;
 		}
-		Logger logger = LoggerFactory.getLogger(App.class);
+		
 		logger.info("logback 成功了");
         logger.error("logback 成功了");
         
