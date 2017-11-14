@@ -116,6 +116,7 @@ public class App {
 		// 加载配置文件json
 		ObjectMapper objectMapper = null;
 		JsonNode node = null;
+		JsonNode value = null;
 		try {
 			objectMapper = new ObjectMapper();
 			node = objectMapper.readTree(ConfigFile);
@@ -133,6 +134,7 @@ public class App {
 		if (node.has("preload")) {
 			if(JsonNodeType.ARRAY==node.get("preload").getNodeType())
 			{
+				value=node.arr;
 				
 			}
 			
