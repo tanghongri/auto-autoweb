@@ -2,7 +2,9 @@ package auto.web;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
@@ -16,24 +18,46 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 
 public class App {
 	private static final Logger LOG = LoggerFactory.getLogger(App.class);
+	private static SystemConfig systemconfig;
 	private static String sCurPath = "";
-	private static BrowserEnum BrowserType;
 	public HashMap<String, TaskInfo> commonTask;
 
 	public static void main(String[] args) {
+
+
+		systemconfig = new SystemConfig();
+		systemconfig.setBrowser(BrowserEnum.BROWER_FIREFOX);
+		List<String> aa=new ArrayList<String>();
+		aa.add("111");
+		aa.add("nnn");
+		systemconfig.setPreload(aa);
+		
+		
+	    String result="";
+		try {
+			result = new ObjectMapper().writeValueAsString(systemconfig);
+		} catch (JsonProcessingException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		System.out.println(result);
+
 		LOG.info("Starting...");
 		// 初始化系统配置
 		if (LoadSystemConfig() != 0) {
 			return;
 		}
-		//加载通用任务
-		
+		// 加载通用任务
+
 		int test = 1;
 		if (test == 1) {
 			LoadTask mLoadTask = new LoadTask();
@@ -114,31 +138,20 @@ public class App {
 		}
 		LOG.info("LoadSystemConfig:" + sCurPath.concat("\\conf\\system.conf"));
 		// 加载配置文件json
-		ObjectMapper objectMapper = null;
-		JsonNode node = null;
-		JsonNode value = null;
+		ObjectMapper mapper = new ObjectMapper();  
 		try {
-			objectMapper = new ObjectMapper();
-			node = objectMapper.readTree(ConfigFile);
+			systemconfig = mapper.readValue(ConfigFile, SystemConfig.class);
+		} catch (JsonParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JsonMappingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			LOG.error("json format");
 			e.printStackTrace();
-			return 2;
-		}
-		if (node.has("browser")) {
-			BrowserType = BrowserEnum.fromBrowserName(node.get("browser").asText());
-		} else {
-			BrowserType=BrowserEnum.BROWER_DEFAULT;
-		}
-		if (node.has("preload")) {
-			if(JsonNodeType.ARRAY==node.get("preload").getNodeType())
-			{
-				value=node.arr;
-				
-			}
-			
-		}
+		}  
+        
 		return 0;
 	}
 }
