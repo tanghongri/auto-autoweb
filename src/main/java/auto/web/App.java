@@ -29,34 +29,16 @@ public class App {
 	private static final Logger LOG = LoggerFactory.getLogger(App.class);
 	private static SystemConfig systemconfig;
 	private static String sCurPath = "";
-	public HashMap<String, TaskInfo> commonTask;
+	private static HashMap<String, TaskInfo> commonTask = new HashMap<String, TaskInfo>();
 
 	public static void main(String[] args) {
-
-
-		systemconfig = new SystemConfig();
-		systemconfig.setBrowser(BrowserEnum.BROWER_FIREFOX);
-		List<String> aa=new ArrayList<String>();
-		aa.add("111");
-		aa.add("nnn");
-		systemconfig.setPreload(aa);
-		
-		
-	    String result="";
-		try {
-			result = new ObjectMapper().writeValueAsString(systemconfig);
-		} catch (JsonProcessingException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		System.out.println(result);
-
 		LOG.info("Starting...");
 		// 初始化系统配置
 		if (LoadSystemConfig() != 0) {
 			return;
 		}
 		// 加载通用任务
+		LoadCommonTask();
 
 		int test = 1;
 		if (test == 1) {
@@ -127,31 +109,57 @@ public class App {
 		// 获取配置文件路径，判断文件是否存在
 		sCurPath = System.getProperty("user.dir");
 		File ConfigFile = new File(sCurPath.concat("\\conf\\system.conf"));
-		if (ConfigFile.exists()) {
-			if (ConfigFile.isDirectory()) {
-				LOG.error("system.conf is dir：." + sCurPath.concat("\\conf\\system.conf"));
-				return 1;
-			}
-		} else {
-			LOG.error("system.conf not exists：." + sCurPath.concat("\\conf\\system.conf"));
-			return 2;
-		}
+
 		LOG.info("LoadSystemConfig:" + sCurPath.concat("\\conf\\system.conf"));
 		// 加载配置文件json
-		ObjectMapper mapper = new ObjectMapper();  
+		ObjectMapper mapper = new ObjectMapper();
 		try {
 			systemconfig = mapper.readValue(ConfigFile, SystemConfig.class);
 		} catch (JsonParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			LOG.error("LoadSystemConfig JsonParseException:" + e.getMessage());
+			return 1;
 		} catch (JsonMappingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			LOG.error("LoadSystemConfig JsonMappingException:" + e.getMessage());
+			return 2;
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}  
-        
+			LOG.error("LoadSystemConfig IOException:" + e.getMessage());
+			return 3;
+		}
+		return 0;
+	}
+
+	public static int LoadCommonTask() {
+		ObjectMapper mapper = new ObjectMapper();
+		TaskInfo task = null;
+		File TaskFile;
+		for (String taskpath : systemconfig.preload) {
+			TaskFile = new File(sCurPath.concat("\\conf\\").concat(taskpath));
+			try {
+				task = mapper.readValue(TaskFile, TaskInfo.class);
+			} catch (JsonParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				LOG.error("LoadCommonTask JsonParseException:" + e.getMessage());
+				return 1;
+			} catch (JsonMappingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				LOG.error("LoadCommonTask JsonMappingException:" + e.getMessage());
+				return 2;
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				LOG.error("LoadCommonTask IOException:" + e.getMessage());
+				return 3;
+			}
+			commonTask.put(task.id, task);
+		}
 		return 0;
 	}
 }

@@ -1,18 +1,18 @@
 package auto.web;
 
-public interface CommandInfo {
-	//操作
-	public final String Action="";
-	//目标类型
-	public final String Type="";
-	//目标名称
-	public final String Target="";
-	//值
-	public final String Value="";
-	//序号
-	public final int Index=0;
-	//正确执行
-	public final int Right=0;
-	//错误执行
-	public final int Error=0;
+public class CommandInfo {
+	// 序号
+	public final int index = 0;
+	// 操作
+	public String action = "";
+	// 目标类型
+	public String type = "";
+	// 目标名称
+	public String target = "";
+	// 值
+	public String value = "";
+	// 正确执行
+	public int right = 0;
+	// 错误执行
+	public int error = 0;
 }
