@@ -2,9 +2,8 @@ package auto.web;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.concurrent.PriorityBlockingQueue;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
@@ -19,17 +18,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
+import auto.web.common.ModuleInfo;
+import auto.web.common.SystemConfig;
+import auto.web.common.TaskInfo;
+import auto.web.common.TaskInfoComparator;
+import auto.web.thread.ExecuteTask;
+import auto.web.thread.GetTaskThread;
 
 public class App {
+	// 日志类
 	private static final Logger LOG = LoggerFactory.getLogger(App.class);
+	// 当前系统配置
 	private static SystemConfig systemconfig;
+	// 当前程序路径
 	private static String sCurPath = "";
-	private static HashMap<String, TaskInfo> commonTask = new HashMap<String, TaskInfo>();
+	// 公共模块map
+	private static HashMap<String, ModuleInfo> commonModule = new HashMap<String, ModuleInfo>();
 
 	public static void main(String[] args) {
 		LOG.info("Starting...");
@@ -37,72 +43,26 @@ public class App {
 		if (LoadSystemConfig() != 0) {
 			return;
 		}
-		// 加载通用任务
-		LoadCommonTask();
+		// 加载通用模块
+		LoadCommonModule();
 
-		int test = 1;
-		if (test == 1) {
-			LoadTask mLoadTask = new LoadTask();
-			mLoadTask.LoadFileTask(sCurPath.concat("\\conf\\jd_login.conf"));
+		// 任务队列
+		PriorityBlockingQueue<TaskInfo> taskqueue = new PriorityBlockingQueue<TaskInfo>(200, new TaskInfoComparator());
 
-		} else {
-			System.setProperty("webdriver.firefox.bin", "C:\\Program Files\\Mozilla Firefox\\firefox.exe");
-			System.setProperty("webdriver.gecko.driver", "C:\\auto\\geckodriver.exe");
-			// Create a new instance of the Firefox driver
-			// Notice that the remainder of the code relies on the interface,
-			// not the implementation.
-			WebDriver driver = new FirefoxDriver();
+		Thread GetThread = new Thread(new GetTaskThread(taskqueue));
+		Thread ExecThread = new Thread(new ExecuteTask(taskqueue));
+		GetThread.start();
+		ExecThread.start();
 
-			// And now use this to visit Google
-			driver.get("https://www.jd.com");
-			// Alternatively the same thing can be done like this
-			// driver.navigate().to("http://www.google.com");
-
-			// Find the text input element by its name
-
-			WebElement element = null;
-			try {
-				element = driver.findElement(By.cssSelector(".link-login"));
-			} catch (NoSuchElementException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			String stxt = element.getText();
-			if (stxt.indexOf("请登陆") == -1) {// 需要登陆
-				element.click();
-				WebDriverWait wait = new WebDriverWait(driver, 20);
-				wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("div.login-tab.login-tab-r")));
-				driver.findElement(By.cssSelector("div.login-tab.login-tab-r")).click();
-				driver.findElement(By.id("loginname")).sendKeys("rige001");
-				driver.findElement(By.id("nloginpwd")).sendKeys("110120");
-				driver.findElement(By.id("loginsubmit")).click();
-			} else {
-				System.out.println("log: " + stxt);
-			}
-			System.out.println("log: " + stxt);
-			// Enter something to search for
-			element.sendKeys("Cheese!");
-
-			// Now submit the form. WebDriver will find the form for us from the element
-			element.submit();
-
-			// Check the title of the page
-			System.out.println("Page title is: " + driver.getTitle());
-
-			// Google's search is rendered dynamically with JavaScript.
-			// Wait for the page to load, timeout after 10 seconds
-			(new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
-				public Boolean apply(WebDriver d) {
-					return d.getTitle().toLowerCase().startsWith("cheese!");
-				}
-			});
-
-			// Should see: "cheese! - Google Search"
-			System.out.println("Page title is: " + driver.getTitle());
-
-			// Close the browser
-			driver.quit();
+		try {
+			GetThread.join();
+			ExecThread.join();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			LOG.error("thread.join:" + e.getMessage());
 		}
+		LOG.info("Exit...");
 	}
 
 	public static int LoadSystemConfig() {
@@ -134,14 +94,14 @@ public class App {
 		return 0;
 	}
 
-	public static int LoadCommonTask() {
+	public static int LoadCommonModule() {
 		ObjectMapper mapper = new ObjectMapper();
-		TaskInfo task = null;
+		ModuleInfo module = null;
 		File TaskFile;
 		for (String taskpath : systemconfig.preload) {
 			TaskFile = new File(sCurPath.concat("\\conf\\").concat(taskpath));
 			try {
-				task = mapper.readValue(TaskFile, TaskInfo.class);
+				module = mapper.readValue(TaskFile, ModuleInfo.class);
 			} catch (JsonParseException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -158,7 +118,7 @@ public class App {
 				LOG.error("LoadCommonTask IOException:" + e.getMessage());
 				return 3;
 			}
-			commonTask.put(task.id, task);
+			commonModule.put(module.id, module);
 		}
 		return 0;
 	}

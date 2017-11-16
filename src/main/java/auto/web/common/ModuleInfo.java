@@ -1,11 +1,14 @@
-package auto.web;
+package auto.web.common;
 
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import auto.web.define.CommandInfo;
+
+//模块信息类
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class TaskInfo {
+public class ModuleInfo {
 	public String id = "";
 	public String name = "";
 	public String type = "";

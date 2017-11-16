@@ -1,5 +1,6 @@
-package auto.web;
+package auto.web.define;
 
+//基础命令类，执行一个操作
 public class CommandInfo {
 	// 序号
 	public final int index = 0;

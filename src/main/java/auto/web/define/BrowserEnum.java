@@ -1,4 +1,4 @@
-package auto.web;
+package auto.web.define;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 

@@ -1,4 +1,4 @@
-package auto.web;
+package auto.web.define;
 //状态列表
 //0默认无任何操作
 //1-99 跳转到对应的命令

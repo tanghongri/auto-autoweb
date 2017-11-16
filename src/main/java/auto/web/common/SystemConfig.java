@@ -1,8 +1,10 @@
-package auto.web;
+package auto.web.common;
 
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import auto.web.define.BrowserEnum;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SystemConfig {
