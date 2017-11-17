@@ -10,10 +10,13 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import auto.web.common.TaskInfo;
 
 public class ExecuteTask implements Runnable {
+	private final Logger LOG = LoggerFactory.getLogger(ExecuteTask.class);
 	private PriorityBlockingQueue<TaskInfo> taskqueue;
 	private boolean brun = true;
 

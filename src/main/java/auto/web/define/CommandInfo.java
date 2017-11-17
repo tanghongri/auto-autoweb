@@ -3,7 +3,7 @@ package auto.web.define;
 //基础命令类，执行一个操作
 public class CommandInfo {
 	// 序号
-	public final int index = 0;
+	public int index = 0;
 	// 操作
 	public String action = "";
 	// 目标类型

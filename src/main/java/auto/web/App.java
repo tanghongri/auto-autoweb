@@ -2,28 +2,24 @@ package auto.web;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.PriorityBlockingQueue;
-
-import org.openqa.selenium.By;
-import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.support.ui.ExpectedCondition;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import auto.web.common.ModuleInfo;
 import auto.web.common.SystemConfig;
 import auto.web.common.TaskInfo;
 import auto.web.common.TaskInfoComparator;
+import auto.web.define.CommandInfo;
 import auto.web.thread.ExecuteTask;
 import auto.web.thread.GetTaskThread;
 
@@ -38,6 +34,9 @@ public class App {
 	private static HashMap<String, ModuleInfo> commonModule = new HashMap<String, ModuleInfo>();
 
 	public static void main(String[] args) {
+		// 测试使用
+		//TestJackson();
+
 		LOG.info("Starting...");
 		// 初始化系统配置
 		if (LoadSystemConfig() != 0) {
@@ -49,7 +48,7 @@ public class App {
 		// 任务队列
 		PriorityBlockingQueue<TaskInfo> taskqueue = new PriorityBlockingQueue<TaskInfo>(200, new TaskInfoComparator());
 
-		Thread GetThread = new Thread(new GetTaskThread(taskqueue));
+		Thread GetThread = new Thread(new GetTaskThread(taskqueue, systemconfig.waittime));
 		Thread ExecThread = new Thread(new ExecuteTask(taskqueue));
 		GetThread.start();
 		ExecThread.start();
@@ -121,5 +120,36 @@ public class App {
 			commonModule.put(module.id, module);
 		}
 		return 0;
+	}
+
+	public static void TestJackson() {
+		TaskInfo task = new TaskInfo();
+		task.taskname = "test";
+		task.priority = 3;
+		task.starttime = new Date();
+
+		CommandInfo cmd = new CommandInfo();
+		cmd.index = 1;
+		cmd.action = "open";
+
+		List<CommandInfo> cmdlist = new ArrayList<CommandInfo>();
+		cmdlist.add(cmd);
+		cmdlist.add(cmd);
+
+		List<List<CommandInfo>> testlist = new ArrayList<List<CommandInfo>>();
+		testlist.add(cmdlist);
+		testlist.add(cmdlist);
+
+		task.step = testlist;
+
+		ObjectMapper mapper = new ObjectMapper();
+		String json = "";
+		try {
+			json = mapper.writeValueAsString(task);
+		} catch (JsonProcessingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println(json);
 	}
 }
