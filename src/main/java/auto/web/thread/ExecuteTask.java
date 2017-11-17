@@ -36,10 +36,18 @@ public class ExecuteTask implements Runnable {
 		this.brun = !brun;
 	}
 
+	private WebElement findTypeElement() {
+		WebElement element = null;
+
+		return element;
+	}
+	
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
 		WebDriver driver = null;
+		WebElement element = null;
+		WebDriverWait wait;
 		switch (systemconfig.browser) {
 		case BROWER_FIREFOX:
 			driver = new FirefoxDriver();
@@ -48,7 +56,7 @@ public class ExecuteTask implements Runnable {
 			break;
 		}
 		LOG.info("init execute: " + systemconfig.browser);
-
+		wait = new WebDriverWait(driver, 20);
 		while (brun) {
 			TaskInfo task = null;
 			try {
@@ -77,6 +85,9 @@ public class ExecuteTask implements Runnable {
 						case GET:
 							driver.get(cmd.value);
 							break;
+						case PREEL:
+							driver.get(cmd.value);
+							break;
 						default:
 							break;
 
@@ -87,18 +98,8 @@ public class ExecuteTask implements Runnable {
 
 		}
 		driver.quit();
-		// Create a new instance of the Firefox driver
-		// Notice that the remainder of the code relies on the interface,
-		// not the implementation.
 
-		// And now use this to visit Google
-		// driver.get("https://www.jd.com");
-		// Alternatively the same thing can be done like this
-		// driver.navigate().to("http://www.google.com");
 
-		// Find the text input element by its name
-
-		WebElement element = null;
 		try {
 			element = driver.findElement(By.cssSelector(".link-login"));
 		} catch (NoSuchElementException e) {
