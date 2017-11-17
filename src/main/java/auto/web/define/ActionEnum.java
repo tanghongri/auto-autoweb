@@ -5,9 +5,11 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public enum ActionEnum {
 	NONE("none"), //空动作
 	MODULE("module"), //执行模块
-	OPEN("open"), //打开一个url
+	GET("get"), //打开一个url
+	NAVIGATE("navigate"),//访问一个页面
 	CLICK("click"),//点击
 	TYPE("type"),//输入内容
+	SUBMIT("submit"),//提交
 	PREEL("presenceOfElementLocated"),//检查元素是否出现
 	TREG("textreg"),//对象字符串正则匹配
 	ACTIONEND("actionend");//结束
