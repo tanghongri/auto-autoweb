@@ -3,7 +3,10 @@ package auto.web.define;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum BrowserEnum {
-	BROWER_FIREFOX("Mozilla Firefox"), B("text2"), C("text3"), D("text4");
+	BROWER_FIREFOX("Mozilla Firefox"), 
+	B("text2"), 
+	C("text3"), 
+	D("text4");
 
 	private final String browsername;
 
@@ -13,7 +16,7 @@ public enum BrowserEnum {
 
 	public static BrowserEnum fromBrowserName(String BrowserName) {
 		for (BrowserEnum browser : BrowserEnum.values()) {
-			if (browser.getbrowsername().equals(BrowserName)) {
+			if (browser.getBrowsername().equals(BrowserName)) {
 				return browser;
 			}
 		}
@@ -21,7 +24,7 @@ public enum BrowserEnum {
 	}
 
 	@JsonValue
-	public String getbrowsername() {
+	public String getBrowsername() {
 		return this.browsername;
 	}
 }

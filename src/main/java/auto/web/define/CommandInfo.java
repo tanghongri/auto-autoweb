@@ -5,7 +5,7 @@ public class CommandInfo {
 	// 序号
 	public int index = 0;
 	// 操作
-	public String action = "";
+	public ActionEnum action = ActionEnum.NONE;
 	// 目标类型
 	public String type = "";
 	// 目标名称

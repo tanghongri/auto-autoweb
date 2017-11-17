@@ -20,12 +20,12 @@ public class GetTaskThread implements Runnable {
 	private final Logger LOG = LoggerFactory.getLogger(GetTaskThread.class);
 	private PriorityBlockingQueue<TaskInfo> taskqueue;
 	private boolean brun = true;
-	// 主动获取任务间隔
-	private int waittime = 30;
+	//
+	private SystemConfig systemconfig;
 
-	public GetTaskThread(PriorityBlockingQueue<TaskInfo> taskqueue, int waittime) {
+	public GetTaskThread(PriorityBlockingQueue<TaskInfo> taskqueue, SystemConfig systemconfig) {
 		this.taskqueue = taskqueue;
-		this.waittime = waittime;
+		this.systemconfig = systemconfig;
 	}
 
 	// 停止任务
@@ -41,7 +41,7 @@ public class GetTaskThread implements Runnable {
 			// 获取任务
 			// 测试从本地文件获取
 			// 读取测试文件
-			String sTestFilePath = System.getProperty("user.dir").concat("\\task\\test2.conf");
+			String sTestFilePath = System.getProperty("user.dir").concat("\\task\\task.conf");
 			File TaskFile = new File(sTestFilePath);
 			// 加载任务文件json
 			ObjectMapper mapper = new ObjectMapper();
@@ -68,11 +68,13 @@ public class GetTaskThread implements Runnable {
 			taskqueue.put(task);
 			// 休眠等待
 			try {
-				Thread.sleep(1000 * waittime);
+				Thread.sleep(1000 * systemconfig.waittime);
 			} catch (InterruptedException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
+			// 测试跳出
+			break;
 		}
 	}
 }

@@ -16,9 +16,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import auto.web.common.ModuleInfo;
+import auto.web.common.PropertyInfo;
 import auto.web.common.SystemConfig;
 import auto.web.common.TaskInfo;
 import auto.web.common.TaskInfoComparator;
+import auto.web.define.ActionEnum;
 import auto.web.define.CommandInfo;
 import auto.web.thread.ExecuteTask;
 import auto.web.thread.GetTaskThread;
@@ -35,7 +37,7 @@ public class App {
 
 	public static void main(String[] args) {
 		// 测试使用
-		//TestJackson();
+		// TestJackson();
 
 		LOG.info("Starting...");
 		// 初始化系统配置
@@ -48,8 +50,8 @@ public class App {
 		// 任务队列
 		PriorityBlockingQueue<TaskInfo> taskqueue = new PriorityBlockingQueue<TaskInfo>(200, new TaskInfoComparator());
 
-		Thread GetThread = new Thread(new GetTaskThread(taskqueue, systemconfig.waittime));
-		Thread ExecThread = new Thread(new ExecuteTask(taskqueue));
+		Thread GetThread = new Thread(new GetTaskThread(taskqueue, systemconfig));
+		Thread ExecThread = new Thread(new ExecuteTask(taskqueue, systemconfig));
 		GetThread.start();
 		ExecThread.start();
 
@@ -90,6 +92,11 @@ public class App {
 			LOG.error("LoadSystemConfig IOException:" + e.getMessage());
 			return 3;
 		}
+		// 设置系统
+		for (PropertyInfo property : systemconfig.Property) {
+			System.setProperty(property.name, property.value);
+		}
+
 		return 0;
 	}
 
@@ -130,7 +137,6 @@ public class App {
 
 		CommandInfo cmd = new CommandInfo();
 		cmd.index = 1;
-		cmd.action = "open";
 
 		List<CommandInfo> cmdlist = new ArrayList<CommandInfo>();
 		cmdlist.add(cmd);

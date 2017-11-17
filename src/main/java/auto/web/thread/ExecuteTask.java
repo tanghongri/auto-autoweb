@@ -13,15 +13,18 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import auto.web.common.SystemConfig;
 import auto.web.common.TaskInfo;
 
 public class ExecuteTask implements Runnable {
 	private final Logger LOG = LoggerFactory.getLogger(ExecuteTask.class);
 	private PriorityBlockingQueue<TaskInfo> taskqueue;
 	private boolean brun = true;
+	private SystemConfig systemconfig;
 
-	public ExecuteTask(PriorityBlockingQueue<TaskInfo> taskqueue) {
+	public ExecuteTask(PriorityBlockingQueue<TaskInfo> taskqueue, SystemConfig systemconfig) {
 		this.taskqueue = taskqueue;
+		this.systemconfig = systemconfig;
 	}
 
 	// 停止任务
@@ -52,8 +55,7 @@ public class ExecuteTask implements Runnable {
 			}
 
 		}
-		System.setProperty("webdriver.firefox.bin", "C:\\Program Files\\Mozilla Firefox\\firefox.exe");
-		System.setProperty("webdriver.gecko.driver", "C:\\auto\\geckodriver.exe");
+		
 		// Create a new instance of the Firefox driver
 		// Notice that the remainder of the code relies on the interface,
 		// not the implementation.
