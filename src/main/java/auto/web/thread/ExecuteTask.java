@@ -2,9 +2,13 @@ package auto.web.thread;
 
 import java.util.HashMap;
 import java.util.concurrent.PriorityBlockingQueue;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
@@ -19,6 +23,7 @@ import auto.web.common.TaskInfo;
 import auto.web.define.CommandInfo;
 import auto.web.define.StatusEnum;
 import auto.web.define.TypeEnum;
+
 //注意：参数检查在 CheckConfig.java中
 //模块、任务加载前执行参数检查再添加队列
 public class ExecuteTask implements Runnable {
@@ -45,51 +50,124 @@ public class ExecuteTask implements Runnable {
 		this.brun = !brun;
 	}
 
-	private WebElement findTypeElement() {
+	private WebElement findTypeElement(CommandInfo cmd) {
 		WebElement element = null;
-
+		try {
+			element = driver.findElement(GetCmdBy(cmd));
+		} catch (NoSuchElementException e) {
+			// TODO Auto-generated catch block
+			LOG.error("pattern:" + e.getMessage());
+		}
 		return element;
 	}
 
-	private StatusEnum GetCmdBy(CommandInfo cmd, By by) {
-		return StatusEnum.SUCESS;
+	private By GetCmdBy(CommandInfo cmd) {
+		By by = null;
+		switch (cmd.type) {
+		case BYCSS:
+			by = By.cssSelector(cmd.target);
+			break;
+		case BYTID:
+			by = By.id(cmd.target);
+			break;
+		default:
+			break;
+		}
+		return by;
 	}
 
 	// 执行一个动作
 	private StatusEnum ExeCmd(CommandInfo cmd) {
-		LOG.info("deal cmd: " + cmd.action + ", " + cmd.type + ", " + cmd.value);
+		StatusEnum status = StatusEnum.SUCESS;
+		LOG.info("deal cmd: " + cmd);
 		switch (cmd.action) {
 		case MODULE:
 			switch (cmd.type) {
 			case COMMON:// 执行公共模板
-				ExeModule(commonModule.get(cmd.value));
+				ExeModule(commonModule.get(cmd.target));
 				break;
 			default:
 				break;
 			}
 			break;
 		case GET:
-			driver.get(cmd.value);
+			driver.get(cmd.target);
 			break;
 		case PREEL:
-			By by = null;
-			GetCmdBy(cmd, by);
-			wait.until(ExpectedConditions.presenceOfElementLocated(by));
-
+			try {
+				element = null;
+				By by = GetCmdBy(cmd);
+				element = wait.until(ExpectedConditions.presenceOfElementLocated(by));
+			} catch (TimeoutException e) {
+				// TODO Auto-generated catch block
+				LOG.error("wait:" + e.getMessage());
+				status = StatusEnum.WAITTIMEOUTE;
+			}
+			break;
+		case TREG:
+			element = findTypeElement(cmd);
+			if (element == null) {
+				status = StatusEnum.ELEMENTEMPTY;
+			} else {
+				try {
+					Pattern pattern = Pattern.compile(cmd.value);
+					String sText = element.getText();
+					Matcher matcher = pattern.matcher(sText);
+					if (matcher.find()) {
+						if (cmd.right != 0) {
+							status = StatusEnum.fromSatusID(cmd.right);
+						}
+					} else {
+						if (cmd.error != 0) {
+							status = StatusEnum.fromSatusID(cmd.error);
+						}
+					}
+				} catch (PatternSyntaxException e) {
+					// TODO Auto-generated catch block
+					LOG.error("pattern:" + e.getMessage());
+					status = StatusEnum.ELEMENTEMPTY;
+				}
+			}
+			break;
+		case CLICK:
+			element = findTypeElement(cmd);
+			if (element == null) {
+				status = StatusEnum.ELEMENTEMPTY;
+			} else {
+				element.click();
+			}
+			break;
+		case TYPE:
+			element = findTypeElement(cmd);
+			if (element == null) {
+				status = StatusEnum.ELEMENTEMPTY;
+			} else {
+				element.sendKeys(cmd.value);
+			}
 			break;
 		default:
-			LOG.error("unknown cmd: " + cmd.action + ", " + cmd.type + ", " + cmd.value);
+			LOG.error("unknown cmd: " + cmd);
 			break;
 		}
-
-		return StatusEnum.SUCESS;
+		return status;
 	}
 
 	// 执行一个模块
 	private int ExeModule(ModuleInfo module) {
-		LOG.info("deal module: " + module.id + ", " + module.name);
-		for (CommandInfo cmd : module.cmdlist) {
-			ExeCmd(cmd);
+		StatusEnum status = StatusEnum.SUCESS;
+		LOG.info("deal module: " + module);
+		while (module.recount > 0) {
+			module.recount--;
+			for (CommandInfo cmd : module.cmdlist) {
+				status = ExeCmd(cmd);
+				if (status != StatusEnum.SUCESS) {
+					LOG.error("CheckCmd：" + cmd + ", " + status);
+					break;
+				}
+			}
+			if (status.getStatus() >= StatusEnum.SUCESS.getStatus()) {
+				break;
+			}
 		}
 		return 0;
 	}
@@ -132,32 +210,6 @@ public class ExecuteTask implements Runnable {
 				LOG.info("quit WebDriver: " + systemconfig.browser);
 			}
 		}
-
-		try {
-			element = driver.findElement(By.cssSelector(".link-login"));
-		} catch (NoSuchElementException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		String stxt = element.getText();
-		if (stxt.indexOf("请登陆") == -1) {// 需要登陆
-			element.click();
-			wait = new WebDriverWait(driver, 20);
-			wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("div.login-tab.login-tab-r")));
-			driver.findElement(By.cssSelector("div.login-tab.login-tab-r")).click();
-			driver.findElement(By.id("loginname")).sendKeys("rige001");
-			driver.findElement(By.id("nloginpwd")).sendKeys("110120");
-			driver.findElement(By.id("loginsubmit")).click();
-		} else {
-			System.out.println("log: " + stxt);
-		}
-		System.out.println("log: " + stxt);
-		// Enter something to search for
-		element.sendKeys("Cheese!");
-
-		// Now submit the form. WebDriver will find the form for us from the element
-		element.submit();
-
 	}
 
 }

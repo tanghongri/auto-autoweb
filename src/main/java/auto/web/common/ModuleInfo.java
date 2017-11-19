@@ -13,6 +13,11 @@ public class ModuleInfo {
 	public String name = "";
 	public String type = "";
 	public int retime = 30;
-	public int recount = 30;
+	public int recount = 1;
 	public List<CommandInfo> cmdlist;
+
+	public String toString() {
+		return "id:" + id + ", " + "name:" + name + ", " + "type:" + type + ", " + "retime:" + retime + ", "
+				+ "recount:" + recount;
+	}
 }

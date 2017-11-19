@@ -74,7 +74,7 @@ public class CheckConfig {
 				}
 				break;
 			case TREG:
-			case TYPE:	
+			case TYPE:
 				switch (cmd.type) {
 				case BYCSS:
 				case BYTID:
@@ -111,12 +111,12 @@ public class CheckConfig {
 				status = CheckCmd(cmd);
 				if (status != StatusEnum.SUCESS) {
 					retstatus = status;
-					LOG.warn("CheckCmd：" + cmd.action + ", " + retstatus.getDesc());
+					LOG.warn("CheckCmd：" + cmd + ", " + retstatus);
 				}
 			}
 		}
 		if (retstatus != StatusEnum.SUCESS) {
-			LOG.warn("CheckModule：" + module.id + ", " + retstatus.getDesc());
+			LOG.warn("CheckModule：" + module + ", " + retstatus);
 		}
 		return retstatus;
 	}

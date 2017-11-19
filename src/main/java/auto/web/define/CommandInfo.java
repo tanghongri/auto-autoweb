@@ -18,6 +18,7 @@ public class CommandInfo {
 	public int error = 0;
 
 	public String toString() {
-		return target;
+		return "index:" + index + ", " + "action:" + action + ", " + "type:" + type + ", " + "target:" + target + ", "
+				+ "value:" + value;
 	}
 }
