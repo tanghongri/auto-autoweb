@@ -199,7 +199,7 @@ public class ExecuteTask implements Runnable {
 					break;
 				}
 				LOG.info("init WebDriver: " + systemconfig.browser);
-				wait = new WebDriverWait(driver, 20);
+				wait = new WebDriverWait(driver, 5);
 
 				LOG.info("start task: " + task.taskname);
 				for (ModuleInfo module : task.step) {
