@@ -1,6 +1,6 @@
 package auto.web.thread;
 
-import java.util.List;
+import java.util.HashMap;
 import java.util.concurrent.PriorityBlockingQueue;
 
 import org.openqa.selenium.By;
@@ -8,27 +8,28 @@ import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import auto.web.common.PropertyInfo;
+import auto.web.common.ModuleInfo;
 import auto.web.common.SystemConfig;
 import auto.web.common.TaskInfo;
-import auto.web.define.BrowserEnum;
-import auto.web.define.CommandInfo;
 
 public class ExecuteTask implements Runnable {
 	private final Logger LOG = LoggerFactory.getLogger(ExecuteTask.class);
-	private PriorityBlockingQueue<TaskInfo> taskqueue;
+
 	private boolean brun = true;
 	private SystemConfig systemconfig;
+	private PriorityBlockingQueue<TaskInfo> taskqueue;
+	private HashMap<String, ModuleInfo> commonModule;
 
-	public ExecuteTask(PriorityBlockingQueue<TaskInfo> taskqueue, SystemConfig systemconfig) {
+	public ExecuteTask(PriorityBlockingQueue<TaskInfo> taskqueue, SystemConfig systemconfig,
+			HashMap<String, ModuleInfo> commonModule) {
 		this.taskqueue = taskqueue;
 		this.systemconfig = systemconfig;
+		this.commonModule = commonModule;
 	}
 
 	// 停止任务
@@ -41,7 +42,7 @@ public class ExecuteTask implements Runnable {
 
 		return element;
 	}
-	
+
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
@@ -74,31 +75,30 @@ public class ExecuteTask implements Runnable {
 				}
 			} else {
 				LOG.info("start task: " + task.taskname);
-				for (List<CommandInfo> cmdlist : task.step) {
+				for (ModuleInfo cmdlist : task.step) {
 					// 处理每步任务列表
-					for (CommandInfo cmd : cmdlist) {
-						// 处理具体任务
-						switch (cmd.action) {
-						case MODULE:
-
-							break;
-						case GET:
-							driver.get(cmd.value);
-							break;
-						case PREEL:
-							driver.get(cmd.value);
-							break;
-						default:
-							break;
-
-						}
-					}
+					// for (CommandInfo cmd : cmdlist) {
+					// // 处理具体任务
+					// switch (cmd.action) {
+					// case MODULE:
+					//
+					// break;
+					// case GET:
+					// driver.get(cmd.value);
+					// break;
+					// case PREEL:
+					// driver.get(cmd.value);
+					// break;
+					// default:
+					// break;
+					//
+					// }
+					// }
 				}
 			}
 
 		}
 		driver.quit();
-
 
 		try {
 			element = driver.findElement(By.cssSelector(".link-login"));
@@ -109,7 +109,7 @@ public class ExecuteTask implements Runnable {
 		String stxt = element.getText();
 		if (stxt.indexOf("请登陆") == -1) {// 需要登陆
 			element.click();
-			WebDriverWait wait = new WebDriverWait(driver, 20);
+			wait = new WebDriverWait(driver, 20);
 			wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("div.login-tab.login-tab-r")));
 			driver.findElement(By.cssSelector("div.login-tab.login-tab-r")).click();
 			driver.findElement(By.id("loginname")).sendKeys("rige001");

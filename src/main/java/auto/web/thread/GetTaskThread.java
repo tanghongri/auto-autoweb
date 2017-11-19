@@ -2,6 +2,7 @@ package auto.web.thread;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.concurrent.PriorityBlockingQueue;
 
 import org.slf4j.Logger;
@@ -12,20 +13,24 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import auto.web.App;
+import auto.web.common.ModuleInfo;
 import auto.web.common.SystemConfig;
 import auto.web.common.TaskInfo;
 
 //获取任务线程
 public class GetTaskThread implements Runnable {
 	private final Logger LOG = LoggerFactory.getLogger(GetTaskThread.class);
-	private PriorityBlockingQueue<TaskInfo> taskqueue;
-	private boolean brun = true;
-	//
-	private SystemConfig systemconfig;
 
-	public GetTaskThread(PriorityBlockingQueue<TaskInfo> taskqueue, SystemConfig systemconfig) {
+	private boolean brun = true;
+	private PriorityBlockingQueue<TaskInfo> taskqueue;
+	private SystemConfig systemconfig;
+	private HashMap<String, ModuleInfo> commonModule;
+
+	public GetTaskThread(PriorityBlockingQueue<TaskInfo> taskqueue, SystemConfig systemconfig,
+			HashMap<String, ModuleInfo> commonModule) {
 		this.taskqueue = taskqueue;
 		this.systemconfig = systemconfig;
+		this.commonModule = commonModule;
 	}
 
 	// 停止任务

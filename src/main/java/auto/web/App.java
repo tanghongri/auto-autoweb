@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.concurrent.PriorityBlockingQueue;
 
 import org.slf4j.Logger;
@@ -16,11 +17,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import auto.web.common.ModuleInfo;
-import auto.web.common.PropertyInfo;
 import auto.web.common.SystemConfig;
 import auto.web.common.TaskInfo;
 import auto.web.common.TaskInfoComparator;
-import auto.web.define.ActionEnum;
 import auto.web.define.CommandInfo;
 import auto.web.thread.ExecuteTask;
 import auto.web.thread.GetTaskThread;
@@ -38,7 +37,6 @@ public class App {
 	public static void main(String[] args) {
 		// 测试使用
 		// TestJackson();
-
 		LOG.info("Starting...");
 		// 初始化系统配置
 		if (LoadSystemConfig() != 0) {
@@ -46,15 +44,12 @@ public class App {
 		}
 		// 加载通用模块
 		LoadCommonModule();
-
 		// 任务队列
 		PriorityBlockingQueue<TaskInfo> taskqueue = new PriorityBlockingQueue<TaskInfo>(200, new TaskInfoComparator());
-
-		Thread GetThread = new Thread(new GetTaskThread(taskqueue, systemconfig));
-		Thread ExecThread = new Thread(new ExecuteTask(taskqueue, systemconfig));
+		Thread GetThread = new Thread(new GetTaskThread(taskqueue, systemconfig, commonModule));
+		Thread ExecThread = new Thread(new ExecuteTask(taskqueue, systemconfig, commonModule));
 		GetThread.start();
 		ExecThread.start();
-
 		try {
 			GetThread.join();
 			ExecThread.join();
@@ -70,8 +65,6 @@ public class App {
 		// 获取配置文件路径，判断文件是否存在
 		sCurPath = System.getProperty("user.dir");
 		File ConfigFile = new File(sCurPath.concat("\\conf\\system.conf"));
-
-		LOG.info("LoadSystemConfig:" + sCurPath.concat("\\conf\\system.conf"));
 		// 加载配置文件json
 		ObjectMapper mapper = new ObjectMapper();
 		try {
@@ -93,10 +86,12 @@ public class App {
 			return 3;
 		}
 		// 设置系统
-		for (PropertyInfo property : systemconfig.Property) {
-			System.setProperty(property.name, property.value);
+		for (Entry<String, String> entry : systemconfig.property.entrySet()) {
+			if (entry.getKey().isEmpty() == false) {
+				System.setProperty(entry.getKey(), entry.getValue());
+			}
 		}
-
+		LOG.info("LoadSystemConfig:" + sCurPath.concat("\\conf\\system.conf"));
 		return 0;
 	}
 
@@ -112,19 +107,24 @@ public class App {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				LOG.error("LoadCommonTask JsonParseException:" + e.getMessage());
-				return 1;
+				continue;
 			} catch (JsonMappingException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				LOG.error("LoadCommonTask JsonMappingException:" + e.getMessage());
-				return 2;
+				continue;
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				LOG.error("LoadCommonTask IOException:" + e.getMessage());
-				return 3;
+				continue;
 			}
+			if(commonModule.get(module.id)!=null)
+			{
+				LOG.warn("module id exist:" + module.id + ", " + sCurPath.concat("\\conf\\").concat(taskpath));
+			}	
 			commonModule.put(module.id, module);
+			LOG.info("LoadCommonModule:" + module.id);
 		}
 		return 0;
 	}
@@ -142,11 +142,11 @@ public class App {
 		cmdlist.add(cmd);
 		cmdlist.add(cmd);
 
-		List<List<CommandInfo>> testlist = new ArrayList<List<CommandInfo>>();
-		testlist.add(cmdlist);
-		testlist.add(cmdlist);
+		ModuleInfo module = new ModuleInfo();
+		module.cmdlist = cmdlist;
 
-		task.step = testlist;
+		task.step = new ArrayList<ModuleInfo>();
+		task.step.add(module);
 
 		ObjectMapper mapper = new ObjectMapper();
 		String json = "";

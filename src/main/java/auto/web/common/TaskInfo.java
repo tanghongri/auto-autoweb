@@ -18,5 +18,5 @@ public class TaskInfo {
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd hh:mm:ss")
 	public Date starttime = null;
 	// 任务列表
-	public List<List<CommandInfo>> step;
+	public List<ModuleInfo> step;
 }
