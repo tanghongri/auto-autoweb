@@ -1,0 +1,26 @@
+cmd 命令案例：
+{	"index":int
+    "action": "String",
+    "type": "String",
+    "target": "String",
+    "value": "String",
+    "right": int,
+    "error": int
+}
+
+cmd.index:命令在列表中的顺序
+
+cmd.action:(必须)
+	none:返回 ACTIONEMPTY(json无 action 这个属性)
+	
+cmd.type:(必须)
+	none:返回 TYPEEMPTY (json无 type 这个属性)	
+
+cmd.target:(必须)
+    "":返回 TARGETEMPTY (json无 target 这个属性 或 为空"")
+
+
+cmd.action==module
+	common:返回 COMMONUNKNOWN (无法找到公共模板)
+	other:返回 TYPEUNKNOWN
+	

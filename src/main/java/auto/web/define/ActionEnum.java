@@ -3,7 +3,7 @@ package auto.web.define;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum ActionEnum {
-	NONE("none"), // 空动作
+	NONE("none"), // 空动作,json串中无属性时使用该值,空字符串不在enum目录无法解析
 	MODULE("module"), // 执行模块
 	GET("get"), // 打开一个url
 	NAVIGATE("navigate"), // 访问一个页面

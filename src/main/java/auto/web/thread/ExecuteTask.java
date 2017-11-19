@@ -19,7 +19,8 @@ import auto.web.common.TaskInfo;
 import auto.web.define.CommandInfo;
 import auto.web.define.StatusEnum;
 import auto.web.define.TypeEnum;
-
+//注意：参数检查在 CheckConfig.java中
+//模块、任务加载前执行参数检查再添加队列
 public class ExecuteTask implements Runnable {
 	private final Logger LOG = LoggerFactory.getLogger(ExecuteTask.class);
 
@@ -51,14 +52,6 @@ public class ExecuteTask implements Runnable {
 	}
 
 	private StatusEnum GetCmdBy(CommandInfo cmd, By by) {
-		if (cmd.target.isEmpty()) {
-			LOG.error("cmd target isEmpty！");
-			return StatusEnum.EMPTYTAR;
-		}
-		if (cmd.type == TypeEnum.NONE) {
-			LOG.error("cmd type isEmpty！");
-			return StatusEnum.EMPTYTYPE;
-		}
 		return StatusEnum.SUCESS;
 	}
 
@@ -69,12 +62,7 @@ public class ExecuteTask implements Runnable {
 		case MODULE:
 			switch (cmd.type) {
 			case COMMON:// 执行公共模板
-				ModuleInfo module = commonModule.get(cmd.value);
-				if (module == null) {
-					LOG.error("can not find commonModule: " + cmd.value);
-					return StatusEnum.FINDCOMMON;
-				}
-				ExeModule(module);
+				ExeModule(commonModule.get(cmd.value));
 				break;
 			default:
 				break;
@@ -99,10 +87,6 @@ public class ExecuteTask implements Runnable {
 
 	// 执行一个模块
 	private int ExeModule(ModuleInfo module) {
-		if (module == null) {
-			LOG.error("ExeModule arg null");
-			return -1;
-		}
 		LOG.info("deal module: " + module.id + ", " + module.name);
 		for (CommandInfo cmd : module.cmdlist) {
 			ExeCmd(cmd);

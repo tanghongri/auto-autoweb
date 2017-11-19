@@ -16,11 +16,14 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import auto.web.common.CheckConfig;
 import auto.web.common.ModuleInfo;
 import auto.web.common.SystemConfig;
 import auto.web.common.TaskInfo;
 import auto.web.common.TaskInfoComparator;
 import auto.web.define.CommandInfo;
+import auto.web.define.StatusEnum;
 import auto.web.thread.ExecuteTask;
 import auto.web.thread.GetTaskThread;
 
@@ -96,8 +99,10 @@ public class App {
 	}
 
 	public static int LoadCommonModule() {
+		CheckConfig checkconfig = new CheckConfig(systemconfig);
 		ObjectMapper mapper = new ObjectMapper();
 		ModuleInfo module = null;
+		StatusEnum status = StatusEnum.SUCESS;
 		File TaskFile;
 		for (String taskpath : systemconfig.preload) {
 			TaskFile = new File(sCurPath.concat("\\conf\\").concat(taskpath));
@@ -119,10 +124,14 @@ public class App {
 				LOG.error("LoadCommonTask IOException:" + e.getMessage());
 				continue;
 			}
-			if(commonModule.get(module.id)!=null)
-			{
+			status = checkconfig.CheckModule(module);
+			if (status != StatusEnum.SUCESS) {
+				LOG.error("CheckModule:" + status + ", " + sCurPath.concat("\\conf\\").concat(taskpath));
+				continue;
+			}
+			if (commonModule.get(module.id) != null) {
 				LOG.warn("module id exist:" + module.id + ", " + sCurPath.concat("\\conf\\").concat(taskpath));
-			}	
+			}
 			commonModule.put(module.id, module);
 			LOG.info("LoadCommonModule:" + module.id);
 		}

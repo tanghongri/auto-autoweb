@@ -7,13 +7,16 @@ package auto.web.define;
 //100 
 //-1 错误输出
 public enum StatusEnum {
-	ACTIONUNKNOWN(-1, "unknown action"),
-	ACTIONEMPTY(-2, "empty action"),
-	
-	COMMONEMTPY(-11, ""), 
-	COMMONFIND(-12, "can not find common mudule"), 
-	EMPTYTAR(-3, "target is empty"), 
-	EMPTYTYPE(-4, "type is empty"), 
+	ACTIONEMPTY(-1, "empty action"),
+	TYPEEMPTY(-2, "empty type"),
+	TARGETEMPTY(-3, "empty value"),	
+	ACTIONUNKNOWN(-4, "unknown type"), 
+	TYPEUNKNOWN(-5, "unknown type"), 
+	COMMONUNKNOWN(-6, "unknown common"), 
+	IDEMPTYM(-11, "empty module id"), 
+	NAMEEMPTYM(-12, "empty module name"), 
+	TYPEEMPTYM(-13, "empty module type"), 
+	CMDEMPTYM(-14, "empty module cmdlist"), 
 	SUCESS(100, "sucess"), 
 	NONE(0, "none");
 	private final int status;

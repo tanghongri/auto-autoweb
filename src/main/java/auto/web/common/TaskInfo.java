@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import auto.web.define.CommandInfo;
 
 //任务信息类
 @JsonIgnoreProperties(ignoreUnknown = true)

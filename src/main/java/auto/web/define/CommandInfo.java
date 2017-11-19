@@ -16,4 +16,8 @@ public class CommandInfo {
 	public int right = 0;
 	// 错误执行
 	public int error = 0;
+
+	public String toString() {
+		return target;
+	}
 }

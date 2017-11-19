@@ -2,49 +2,105 @@ package auto.web.common;
 
 import java.util.HashMap;
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import auto.web.define.ActionEnum;
 import auto.web.define.CommandInfo;
 import auto.web.define.StatusEnum;
+import auto.web.define.TypeEnum;
 
 public class CheckConfig {
-	private HashMap<String, ModuleInfo> commonModule;
+	private final Logger LOG = LoggerFactory.getLogger(CheckConfig.class);
+	private HashMap<String, ModuleInfo> commonModule = null;
+	private SystemConfig systemconfig = null;
+	// 0 不检查变量，1检查变量
+	private int checktype = 0;
 
-	public CheckConfig(HashMap<String, ModuleInfo> commonModule) {
-		// TODO Auto-generated constructor stub
+	// 加载公共类使用
+	public CheckConfig(SystemConfig systemconfig) {
+		this.systemconfig = systemconfig;
+		this.checktype = 0;
+	}
+
+	// 加载任务使用
+	public CheckConfig(SystemConfig systemconfig, HashMap<String, ModuleInfo> commonModule) {
+		this.systemconfig = systemconfig;
 		this.commonModule = commonModule;
+		this.checktype = 1;
 	}
 
 	public StatusEnum CheckCmd(CommandInfo cmd) {
-		StatusEnum status = StatusEnum.NONE;
-		switch (cmd.action) {
-		case NONE:
+		StatusEnum status = StatusEnum.SUCESS;
+
+		if (cmd.action == ActionEnum.NONE) {
 			status = StatusEnum.ACTIONEMPTY;
-			break;
-		case MODULE:
-			switch (cmd.type) {
-			case NONE:// 执行公共模板
-				break;
-			case COMMON:// 执行公共模板
-				if (cmd.value.isEmpty()) {
-					status = StatusEnum.COMMONEMTPY;
-				} else if (commonModule.get(cmd.value) == null) {
-					status = StatusEnum.COMMONFIND;
+		} else if (cmd.type == TypeEnum.NONE) {
+			status = StatusEnum.TYPEEMPTY;
+		} else if (cmd.target.isEmpty()) {
+			status = StatusEnum.TARGETEMPTY;
+		} else {
+			switch (cmd.action) {
+			case MODULE:
+				switch (cmd.type) {
+				case COMMON:
+					if (commonModule.get(cmd.target) == null) {
+						status = StatusEnum.COMMONUNKNOWN;
+					}
+					break;
+				default:
+					status = StatusEnum.TYPEUNKNOWN;
+					break;
 				}
 				break;
+			case GET:
+				switch (cmd.type) {
+				case NONE:// 执行公共模板
+					status = StatusEnum.TYPEEMPTY;
+					break;
+				case URL://
+					if (cmd.target.isEmpty()) {
+						status = StatusEnum.TARGETEMPTY;
+					}
+					break;
+				default:
+					status = StatusEnum.TYPEUNKNOWN;
+					break;
+				}
+				break;
+			case PREEL:
+				break;
 			default:
+				status = StatusEnum.ACTIONUNKNOWN;
 				break;
 			}
-			break;
-		case GET:
-			break;
-		case PREEL:
-			break;
-		default:
-			status = StatusEnum.ACTIONUNKNOWN;
-			break;
 		}
 		return status;
+	}
+
+	public StatusEnum CheckModule(ModuleInfo module) {
+		StatusEnum retstatus = StatusEnum.SUCESS;
+		StatusEnum status = StatusEnum.SUCESS;
+		if (module.id.isEmpty()) {
+			retstatus = StatusEnum.IDEMPTYM;
+		} else if (module.name.isEmpty()) {
+			retstatus = StatusEnum.NAMEEMPTYM;
+		} else if (module.type.isEmpty()) {
+			retstatus = StatusEnum.TYPEEMPTYM;
+		} else if (module.cmdlist == null) {
+			retstatus = StatusEnum.CMDEMPTYM;
+		} else {
+			for (CommandInfo cmd : module.cmdlist) {
+				status = CheckCmd(cmd);
+				if (status != StatusEnum.SUCESS) {
+					retstatus = status;
+					LOG.warn("CheckCmd：" + cmd.action + ", " + retstatus.getDesc());
+				}
+			}
+		}
+		if (retstatus != StatusEnum.SUCESS) {
+			LOG.warn("CheckModule：" + module.id + ", " + retstatus.getDesc());
+		}
+		return retstatus;
 	}
 }
