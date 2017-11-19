@@ -7,7 +7,7 @@ public class CommandInfo {
 	// 操作
 	public ActionEnum action = ActionEnum.NONE;
 	// 目标类型
-	public String type = "";
+	public TypeEnum type = TypeEnum.NONE;
 	// 目标名称
 	public String target = "";
 	// 值

@@ -16,6 +16,9 @@ import org.slf4j.LoggerFactory;
 import auto.web.common.ModuleInfo;
 import auto.web.common.SystemConfig;
 import auto.web.common.TaskInfo;
+import auto.web.define.CommandInfo;
+import auto.web.define.StatusEnum;
+import auto.web.define.TypeEnum;
 
 public class ExecuteTask implements Runnable {
 	private final Logger LOG = LoggerFactory.getLogger(ExecuteTask.class);
@@ -24,6 +27,10 @@ public class ExecuteTask implements Runnable {
 	private SystemConfig systemconfig;
 	private PriorityBlockingQueue<TaskInfo> taskqueue;
 	private HashMap<String, ModuleInfo> commonModule;
+	//
+	WebDriver driver = null;
+	WebElement element = null;
+	WebDriverWait wait;
 
 	public ExecuteTask(PriorityBlockingQueue<TaskInfo> taskqueue, SystemConfig systemconfig,
 			HashMap<String, ModuleInfo> commonModule) {
@@ -43,21 +50,69 @@ public class ExecuteTask implements Runnable {
 		return element;
 	}
 
+	private StatusEnum GetCmdBy(CommandInfo cmd, By by) {
+		if (cmd.target.isEmpty()) {
+			LOG.error("cmd target isEmpty！");
+			return StatusEnum.EMPTYTAR;
+		}
+		if (cmd.type == TypeEnum.NONE) {
+			LOG.error("cmd type isEmpty！");
+			return StatusEnum.EMPTYTYPE;
+		}
+		return StatusEnum.SUCESS;
+	}
+
+	// 执行一个动作
+	private StatusEnum ExeCmd(CommandInfo cmd) {
+		LOG.info("deal cmd: " + cmd.action + ", " + cmd.type + ", " + cmd.value);
+		switch (cmd.action) {
+		case MODULE:
+			switch (cmd.type) {
+			case COMMON:// 执行公共模板
+				ModuleInfo module = commonModule.get(cmd.value);
+				if (module == null) {
+					LOG.error("can not find commonModule: " + cmd.value);
+					return StatusEnum.FINDCOMMON;
+				}
+				ExeModule(module);
+				break;
+			default:
+				break;
+			}
+			break;
+		case GET:
+			driver.get(cmd.value);
+			break;
+		case PREEL:
+			By by = null;
+			GetCmdBy(cmd, by);
+			wait.until(ExpectedConditions.presenceOfElementLocated(by));
+
+			break;
+		default:
+			LOG.error("unknown cmd: " + cmd.action + ", " + cmd.type + ", " + cmd.value);
+			break;
+		}
+
+		return StatusEnum.SUCESS;
+	}
+
+	// 执行一个模块
+	private int ExeModule(ModuleInfo module) {
+		if (module == null) {
+			LOG.error("ExeModule arg null");
+			return -1;
+		}
+		LOG.info("deal module: " + module.id + ", " + module.name);
+		for (CommandInfo cmd : module.cmdlist) {
+			ExeCmd(cmd);
+		}
+		return 0;
+	}
+
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
-		WebDriver driver = null;
-		WebElement element = null;
-		WebDriverWait wait;
-		switch (systemconfig.browser) {
-		case BROWER_FIREFOX:
-			driver = new FirefoxDriver();
-			break;
-		default:
-			break;
-		}
-		LOG.info("init execute: " + systemconfig.browser);
-		wait = new WebDriverWait(driver, 20);
 		while (brun) {
 			TaskInfo task = null;
 			try {
@@ -74,31 +129,25 @@ public class ExecuteTask implements Runnable {
 					e.printStackTrace();
 				}
 			} else {
-				LOG.info("start task: " + task.taskname);
-				for (ModuleInfo cmdlist : task.step) {
-					// 处理每步任务列表
-					// for (CommandInfo cmd : cmdlist) {
-					// // 处理具体任务
-					// switch (cmd.action) {
-					// case MODULE:
-					//
-					// break;
-					// case GET:
-					// driver.get(cmd.value);
-					// break;
-					// case PREEL:
-					// driver.get(cmd.value);
-					// break;
-					// default:
-					// break;
-					//
-					// }
-					// }
+				switch (systemconfig.browser) {
+				case BROWER_FIREFOX:
+					driver = new FirefoxDriver();
+					break;
+				default:
+					break;
 				}
-			}
+				LOG.info("init WebDriver: " + systemconfig.browser);
+				wait = new WebDriverWait(driver, 20);
 
+				LOG.info("start task: " + task.taskname);
+				for (ModuleInfo module : task.step) {
+					// 处理每步任务列表
+					ExeModule(module);
+				}
+				driver.quit();
+				LOG.info("quit WebDriver: " + systemconfig.browser);
+			}
 		}
-		driver.quit();
 
 		try {
 			element = driver.findElement(By.cssSelector(".link-login"));
