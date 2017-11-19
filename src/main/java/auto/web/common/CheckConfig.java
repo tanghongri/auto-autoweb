@@ -55,13 +55,7 @@ public class CheckConfig {
 				break;
 			case GET:
 				switch (cmd.type) {
-				case NONE:// 执行公共模板
-					status = StatusEnum.TYPEEMPTY;
-					break;
 				case URL://
-					if (cmd.target.isEmpty()) {
-						status = StatusEnum.TARGETEMPTY;
-					}
 					break;
 				default:
 					status = StatusEnum.TYPEUNKNOWN;
@@ -69,6 +63,29 @@ public class CheckConfig {
 				}
 				break;
 			case PREEL:
+			case CLICK:
+				switch (cmd.type) {
+				case BYCSS:
+				case BYTID:
+					break;
+				default:
+					status = StatusEnum.TYPEUNKNOWN;
+					break;
+				}
+				break;
+			case TREG:
+			case TYPE:	
+				switch (cmd.type) {
+				case BYCSS:
+				case BYTID:
+					if (cmd.value.isEmpty()) {
+						status = StatusEnum.VALUEEMPTY;
+					}
+					break;
+				default:
+					status = StatusEnum.TYPEUNKNOWN;
+					break;
+				}
 				break;
 			default:
 				status = StatusEnum.ACTIONUNKNOWN;

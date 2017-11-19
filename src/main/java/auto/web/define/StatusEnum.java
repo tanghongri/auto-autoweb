@@ -9,10 +9,11 @@ package auto.web.define;
 public enum StatusEnum {
 	ACTIONEMPTY(-1, "empty action"),
 	TYPEEMPTY(-2, "empty type"),
-	TARGETEMPTY(-3, "empty value"),	
+	TARGETEMPTY(-3, "empty target"),	
 	ACTIONUNKNOWN(-4, "unknown type"), 
 	TYPEUNKNOWN(-5, "unknown type"), 
 	COMMONUNKNOWN(-6, "unknown common"), 
+	VALUEEMPTY(-7, "empty value"),	
 	IDEMPTYM(-11, "empty module id"), 
 	NAMEEMPTYM(-12, "empty module name"), 
 	TYPEEMPTYM(-13, "empty module type"), 
