@@ -12,9 +12,11 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import auto.web.common.CheckConfig;
 import auto.web.common.ModuleInfo;
 import auto.web.common.SystemConfig;
 import auto.web.common.TaskInfo;
+import auto.web.define.StatusEnum;
 
 //获取任务线程
 public class GetTaskThread implements Runnable {
@@ -40,7 +42,12 @@ public class GetTaskThread implements Runnable {
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
+		LOG.info("GetTaskThread start");
+
 		TaskInfo task;
+		StatusEnum status = StatusEnum.SUCESS;
+		ObjectMapper mapper = new ObjectMapper();
+		CheckConfig checkconfig = new CheckConfig(systemconfig, commonModule);
 		while (brun) {
 			// 获取任务
 			// 测试从本地文件获取
@@ -48,7 +55,6 @@ public class GetTaskThread implements Runnable {
 			String sTestFilePath = System.getProperty("user.dir").concat("\\task\\task.conf");
 			File TaskFile = new File(sTestFilePath);
 			// 加载任务文件json
-			ObjectMapper mapper = new ObjectMapper();
 			try {
 				task = mapper.readValue(TaskFile, TaskInfo.class);
 			} catch (JsonParseException e) {
@@ -65,6 +71,12 @@ public class GetTaskThread implements Runnable {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				LOG.error("LoadTask IOException:" + e.getMessage());
+				continue;
+			}
+			// 检查任务
+			status = checkconfig.CheckTask(task);
+			if (status != StatusEnum.SUCESS) {
+				LOG.warn("CheckTask error: " + status + ", " + task);
 				continue;
 			}
 			// 任务队列添加

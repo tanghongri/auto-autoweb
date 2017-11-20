@@ -95,6 +95,7 @@ public class CheckConfig {
 		return status;
 	}
 
+	// 仅输出下级错误信息，本级错误由上级输出
 	public StatusEnum CheckModule(ModuleInfo module) {
 		StatusEnum retstatus = StatusEnum.SUCESS;
 		StatusEnum status = StatusEnum.SUCESS;
@@ -111,12 +112,29 @@ public class CheckConfig {
 				status = CheckCmd(cmd);
 				if (status != StatusEnum.SUCESS) {
 					retstatus = status;
-					LOG.warn("CheckCmd：" + cmd + ", " + retstatus);
+					LOG.warn("CheckCmd error：" + cmd);
 				}
 			}
 		}
-		if (retstatus != StatusEnum.SUCESS) {
-			LOG.warn("CheckModule：" + module + ", " + retstatus);
+		return retstatus;
+	}
+
+	// 仅输出下级错误信息，本级错误由上级输出
+	public StatusEnum CheckTask(TaskInfo task) {
+		StatusEnum retstatus = StatusEnum.SUCESS;
+		StatusEnum status = StatusEnum.SUCESS;
+		if (task.taskname.isEmpty()) {
+			retstatus = StatusEnum.NAMEEMPTYT;
+		} else if (task.step == null) {
+			retstatus = StatusEnum.STEPEMPTYT;
+		} else {
+			for (ModuleInfo module : task.step) {
+				status = CheckModule(module);
+				if (status != StatusEnum.SUCESS) {
+					retstatus = status;
+					LOG.warn("CheckModule error: " + module);
+				}
+			}
 		}
 		return retstatus;
 	}

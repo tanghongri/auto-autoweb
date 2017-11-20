@@ -18,4 +18,8 @@ public class TaskInfo {
 	public Date starttime = null;
 	// 任务列表
 	public List<ModuleInfo> step;
+
+	public String toString() {
+		return "taskname: " + taskname + ", " + "priority: " + priority + ", " + "starttime: " + starttime;
+	}
 }

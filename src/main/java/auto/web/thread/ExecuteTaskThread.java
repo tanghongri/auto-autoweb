@@ -26,8 +26,8 @@ import auto.web.define.TypeEnum;
 
 //注意：参数检查在 CheckConfig.java中
 //模块、任务加载前执行参数检查再添加队列
-public class ExecuteTask implements Runnable {
-	private final Logger LOG = LoggerFactory.getLogger(ExecuteTask.class);
+public class ExecuteTaskThread implements Runnable {
+	private final Logger LOG = LoggerFactory.getLogger(ExecuteTaskThread.class);
 
 	private boolean brun = true;
 	private SystemConfig systemconfig;
@@ -38,7 +38,7 @@ public class ExecuteTask implements Runnable {
 	WebElement element = null;
 	WebDriverWait wait;
 
-	public ExecuteTask(PriorityBlockingQueue<TaskInfo> taskqueue, SystemConfig systemconfig,
+	public ExecuteTaskThread(PriorityBlockingQueue<TaskInfo> taskqueue, SystemConfig systemconfig,
 			HashMap<String, ModuleInfo> commonModule) {
 		this.taskqueue = taskqueue;
 		this.systemconfig = systemconfig;
@@ -175,6 +175,8 @@ public class ExecuteTask implements Runnable {
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
+		LOG.info("ExecuteTaskThread start");
+		
 		while (brun) {
 			TaskInfo task = null;
 			try {

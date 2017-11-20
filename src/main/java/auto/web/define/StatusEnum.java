@@ -18,9 +18,11 @@ public enum StatusEnum {
 	NAMEEMPTYM(-12, "empty module name"), 
 	TYPEEMPTYM(-13, "empty module type"), 
 	CMDEMPTYM(-14, "empty module cmdlist"), 
-	WAITTIMEOUTE(-20, "wait element time out"),
-	ELEMENTEMPTY(-21, "empty element"),
-	TEXTPATTERN(-22, "text pattern "),
+	NAMEEMPTYT(-15, "empty task name"), 
+	STEPEMPTYT(-16, "empty task step"), 
+	WAITTIMEOUTE(-20, "wait element time out"), 
+	ELEMENTEMPTY(-21, "empty element"), 
+	TEXTPATTERN(-22, "text pattern "), 
 	SUCESS(100, "sucess"), 
 	RETSUCESS(101, "sucess ret"), 
 	NONE(0, "none");
@@ -50,6 +52,6 @@ public enum StatusEnum {
 	}
 
 	public String toString() {
-		return this.desc;
+		return this.status + ": " + this.desc;
 	}
 }

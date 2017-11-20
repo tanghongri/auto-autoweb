@@ -24,18 +24,16 @@ import auto.web.common.TaskInfo;
 import auto.web.common.TaskInfoComparator;
 import auto.web.define.CommandInfo;
 import auto.web.define.StatusEnum;
-import auto.web.thread.ExecuteTask;
+import auto.web.thread.ExecuteTaskThread;
 import auto.web.thread.GetTaskThread;
 
 public class App {
 	// 日志类
 	private static final Logger LOG = LoggerFactory.getLogger(App.class);
 	// 当前系统配置
-	private static SystemConfig systemconfig;
-	// 当前程序路径
-	private static String sCurPath = "";
+	public static SystemConfig systemconfig;
 	// 公共模块map
-	private static HashMap<String, ModuleInfo> commonModule = new HashMap<String, ModuleInfo>();
+	public static HashMap<String, ModuleInfo> commonModule = new HashMap<String, ModuleInfo>();
 
 	public static void main(String[] args) {
 		// 测试使用
@@ -50,7 +48,7 @@ public class App {
 		// 任务队列
 		PriorityBlockingQueue<TaskInfo> taskqueue = new PriorityBlockingQueue<TaskInfo>(200, new TaskInfoComparator());
 		Thread GetThread = new Thread(new GetTaskThread(taskqueue, systemconfig, commonModule));
-		Thread ExecThread = new Thread(new ExecuteTask(taskqueue, systemconfig, commonModule));
+		Thread ExecThread = new Thread(new ExecuteTaskThread(taskqueue, systemconfig, commonModule));
 		GetThread.start();
 		ExecThread.start();
 		try {
@@ -66,8 +64,8 @@ public class App {
 
 	public static int LoadSystemConfig() {
 		// 获取配置文件路径，判断文件是否存在
-		sCurPath = System.getProperty("user.dir");
-		File ConfigFile = new File(sCurPath.concat("\\conf\\system.conf"));
+		String sFilePath = System.getProperty("user.dir").concat("\\conf\\system.conf");
+		File ConfigFile = new File(sFilePath);
 		// 加载配置文件json
 		ObjectMapper mapper = new ObjectMapper();
 		try {
@@ -88,13 +86,13 @@ public class App {
 			LOG.error("LoadSystemConfig IOException:" + e.getMessage());
 			return 3;
 		}
-		// 设置系统
+		// 设置系统环境变量
 		for (Entry<String, String> entry : systemconfig.property.entrySet()) {
 			if (entry.getKey().isEmpty() == false) {
 				System.setProperty(entry.getKey(), entry.getValue());
 			}
 		}
-		LOG.info("LoadSystemConfig:" + sCurPath.concat("\\conf\\system.conf"));
+		LOG.info("LoadSystemConfig:" + sFilePath);
 		return 0;
 	}
 
@@ -104,9 +102,11 @@ public class App {
 		ModuleInfo module = null;
 		StatusEnum status = StatusEnum.SUCESS;
 		File TaskFile;
-		sCurPath = System.getProperty("user.dir");
+		String sCurPath = System.getProperty("user.dir");
+		String sFilePath = "";
 		for (String taskpath : systemconfig.preload) {
-			TaskFile = new File(sCurPath.concat("\\conf\\").concat(taskpath));
+			sFilePath = sCurPath.concat("\\conf\\").concat(taskpath);
+			TaskFile = new File(sFilePath);
 			try {
 				module = mapper.readValue(TaskFile, ModuleInfo.class);
 			} catch (JsonParseException e) {
@@ -127,14 +127,14 @@ public class App {
 			}
 			status = checkconfig.CheckModule(module);
 			if (status != StatusEnum.SUCESS) {
-				LOG.error("CheckModule:" + status + ", " + sCurPath.concat("\\conf\\").concat(taskpath));
+				LOG.error("CheckModule: " + status + ", " + sFilePath);
 				continue;
 			}
 			if (commonModule.get(module.id) != null) {
-				LOG.warn("module id exist:" + module.id + ", " + sCurPath.concat("\\conf\\").concat(taskpath));
+				LOG.warn("module id exist:" + module.id + ", " + sFilePath);
 			}
 			commonModule.put(module.id, module);
-			LOG.info("LoadCommonModule:" + module.id);
+			LOG.info("LoadCommonModule:" + module.id + ", " + sFilePath);
 		}
 		return 0;
 	}

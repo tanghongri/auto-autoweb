@@ -17,7 +17,7 @@ public class ModuleInfo {
 	public List<CommandInfo> cmdlist;
 
 	public String toString() {
-		return "id:" + id + ", " + "name:" + name + ", " + "type:" + type + ", " + "retime:" + retime + ", "
-				+ "recount:" + recount;
+		return "id: " + id + ", " + "name: " + name + ", " + "type: " + type + ", " + "retime: " + retime + ", "
+				+ "recount: " + recount;
 	}
 }
