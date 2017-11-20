@@ -176,7 +176,7 @@ public class ExecuteTaskThread implements Runnable {
 	public void run() {
 		// TODO Auto-generated method stub
 		LOG.info("ExecuteTaskThread start");
-		
+
 		while (brun) {
 			TaskInfo task = null;
 			try {
@@ -193,12 +193,20 @@ public class ExecuteTaskThread implements Runnable {
 					e.printStackTrace();
 				}
 			} else {
-				switch (systemconfig.browser) {
-				case BROWER_FIREFOX:
-					driver = new FirefoxDriver();
-					break;
-				default:
-					break;
+				// 若驱动路径错误直接退出
+				try {
+					switch (systemconfig.browser) {
+					case BROWER_FIREFOX:
+						driver = new FirefoxDriver();
+						break;
+					default:
+						break;
+					}
+				} catch (IllegalStateException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					LOG.error("init WebDriver: " + e.getMessage());
+					System.exit(1);
 				}
 				LOG.info("init WebDriver: " + systemconfig.browser);
 				wait = new WebDriverWait(driver, 5);

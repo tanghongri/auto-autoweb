@@ -14,6 +14,7 @@ public class ModuleInfo {
 	public String type = "";
 	public int retime = 30;
 	public int recount = 1;
+	public int waittime = 30;//等待页面加载时间、出错等待时间
 	public List<CommandInfo> cmdlist;
 
 	public String toString() {
