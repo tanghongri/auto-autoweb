@@ -104,6 +104,7 @@ public class App {
 		ModuleInfo module = null;
 		StatusEnum status = StatusEnum.SUCESS;
 		File TaskFile;
+		sCurPath = System.getProperty("user.dir");
 		for (String taskpath : systemconfig.preload) {
 			TaskFile = new File(sCurPath.concat("\\conf\\").concat(taskpath));
 			try {
