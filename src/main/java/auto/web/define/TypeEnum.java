@@ -8,6 +8,8 @@ public enum TypeEnum {
 	URL("url"), //
 	BYCSS("cssSelector"), //
 	BYTID("id"), //
+	READ("read"), //
+	SAVE("save"), //
 	TYPEEND("typeend");// 结束
 
 	private final String typename;

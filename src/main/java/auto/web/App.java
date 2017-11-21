@@ -66,6 +66,7 @@ public class App {
 		// 获取配置文件路径，判断文件是否存在
 		String sFilePath = System.getProperty("user.dir").concat("\\conf\\system.conf");
 		File ConfigFile = new File(sFilePath);
+		LOG.info("loading:" + sFilePath);
 		// 加载配置文件json
 		ObjectMapper mapper = new ObjectMapper();
 		try {
@@ -107,6 +108,7 @@ public class App {
 		for (String taskpath : systemconfig.preload) {
 			sFilePath = sCurPath.concat("\\conf\\").concat(taskpath);
 			TaskFile = new File(sFilePath);
+			LOG.info("loading:" + sFilePath);
 			try {
 				module = mapper.readValue(TaskFile, ModuleInfo.class);
 			} catch (JsonParseException e) {

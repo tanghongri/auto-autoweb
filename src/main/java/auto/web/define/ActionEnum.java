@@ -12,6 +12,7 @@ public enum ActionEnum {
 	SUBMIT("submit"), // 提交
 	PREEL("presenceOfElementLocated"), // 检查元素是否出现
 	TREG("textreg"), // 对象字符串正则匹配
+	COOKIE("cookie"), //
 	ACTIONEND("actionend");// 结束
 
 	private final String actionname;

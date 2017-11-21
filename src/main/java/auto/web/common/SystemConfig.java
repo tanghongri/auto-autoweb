@@ -10,6 +10,7 @@ import auto.web.define.BrowserEnum;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SystemConfig {
 	public BrowserEnum browser = BrowserEnum.BROWER_FIREFOX;
+	public int retime = 30;
 	public int waittime = 30;
 	public Map<String,String> property;
 	public Map<String,String> args;

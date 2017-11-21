@@ -79,7 +79,6 @@ public class ExecuteTaskThread implements Runnable {
 	// 执行一个动作
 	private StatusEnum ExeCmd(CommandInfo cmd) {
 		StatusEnum status = StatusEnum.SUCESS;
-		LOG.info("deal cmd: " + cmd);
 		switch (cmd.action) {
 		case MODULE:
 			switch (cmd.type) {
@@ -155,10 +154,10 @@ public class ExecuteTaskThread implements Runnable {
 	// 执行一个模块
 	private int ExeModule(ModuleInfo module) {
 		StatusEnum status = StatusEnum.SUCESS;
-		LOG.info("deal module: " + module);
 		while (module.recount > 0) {
 			module.recount--;
 			for (CommandInfo cmd : module.cmdlist) {
+				LOG.info("ExeCmd " + module.cmdlist.indexOf(cmd) + " " + module.recount + ": " + cmd);
 				status = ExeCmd(cmd);
 				if (status != StatusEnum.SUCESS) {
 					LOG.error("CheckCmd：" + cmd + ", " + status);
@@ -167,6 +166,16 @@ public class ExecuteTaskThread implements Runnable {
 			}
 			if (status.getStatus() >= StatusEnum.SUCESS.getStatus()) {
 				break;
+			}
+			int nTime = systemconfig.retime;
+			if (module.retime > 5 && nTime > module.retime) {
+				nTime = module.retime;
+			}
+			try {
+				Thread.sleep(1000 * nTime);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 		return 0;
@@ -210,10 +219,12 @@ public class ExecuteTaskThread implements Runnable {
 				}
 				LOG.info("init WebDriver: " + systemconfig.browser);
 				wait = new WebDriverWait(driver, 5);
-
+			
 				LOG.info("start task: " + task.taskname);
+
 				for (ModuleInfo module : task.step) {
 					// 处理每步任务列表
+					LOG.info("ExeModule " + task.step.indexOf(module) + ": " + module);
 					ExeModule(module);
 				}
 				driver.quit();
