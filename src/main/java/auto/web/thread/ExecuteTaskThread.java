@@ -53,7 +53,7 @@ public class ExecuteTaskThread implements Runnable {
 	private WebElement findTypeElement(CommandInfo cmd) {
 		WebElement element = null;
 		try {
-			element = driver.findElement(GetCmdBy(cmd));
+			element = driver.findElement(getCmdBy(cmd));
 		} catch (NoSuchElementException e) {
 			// TODO Auto-generated catch block
 			LOG.error("pattern:" + e.getMessage());
@@ -61,7 +61,7 @@ public class ExecuteTaskThread implements Runnable {
 		return element;
 	}
 
-	private By GetCmdBy(CommandInfo cmd) {
+	private By getCmdBy(CommandInfo cmd) {
 		By by = null;
 		switch (cmd.type) {
 		case BYCSS:
@@ -77,13 +77,13 @@ public class ExecuteTaskThread implements Runnable {
 	}
 
 	// 执行一个动作
-	private StatusEnum ExeCmd(CommandInfo cmd) {
+	private StatusEnum execCmd(CommandInfo cmd) {
 		StatusEnum status = StatusEnum.SUCESS;
 		switch (cmd.action) {
 		case MODULE:
 			switch (cmd.type) {
 			case COMMON:// 执行公共模板
-				ExeModule(commonModule.get(cmd.target));
+				execModule(commonModule.get(cmd.target));
 				break;
 			default:
 				break;
@@ -95,7 +95,7 @@ public class ExecuteTaskThread implements Runnable {
 		case PREEL:
 			try {
 				element = null;
-				By by = GetCmdBy(cmd);
+				By by = getCmdBy(cmd);
 				element = wait.until(ExpectedConditions.presenceOfElementLocated(by));
 			} catch (TimeoutException e) {
 				// TODO Auto-generated catch block
@@ -152,13 +152,13 @@ public class ExecuteTaskThread implements Runnable {
 	}
 
 	// 执行一个模块
-	private int ExeModule(ModuleInfo module) {
+	private int execModule(ModuleInfo module) {
 		StatusEnum status = StatusEnum.SUCESS;
 		while (module.recount > 0) {
 			module.recount--;
 			for (CommandInfo cmd : module.cmdlist) {
 				LOG.info("ExeCmd " + module.cmdlist.indexOf(cmd) + " " + module.recount + ": " + cmd);
-				status = ExeCmd(cmd);
+				status = execCmd(cmd);
 				if (status != StatusEnum.SUCESS) {
 					LOG.error("CheckCmd：" + cmd + ", " + status);
 					break;
@@ -225,7 +225,7 @@ public class ExecuteTaskThread implements Runnable {
 				for (ModuleInfo module : task.step) {
 					// 处理每步任务列表
 					LOG.info("ExeModule " + task.step.indexOf(module) + ": " + module);
-					ExeModule(module);
+					execModule(module);
 				}
 				driver.quit();
 				LOG.info("quit WebDriver: " + systemconfig.browser);

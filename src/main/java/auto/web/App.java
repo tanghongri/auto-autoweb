@@ -40,11 +40,11 @@ public class App {
 		// TestJackson();
 		LOG.info("Starting...");
 		// 初始化系统配置
-		if (LoadSystemConfig() != 0) {
+		if (loadSystemConfig() != 0) {
 			return;
 		}
 		// 加载通用模块
-		LoadCommonModule();
+		loadCommonModule();
 		// 任务队列
 		PriorityBlockingQueue<TaskInfo> taskqueue = new PriorityBlockingQueue<TaskInfo>(200, new TaskInfoComparator());
 		Thread GetThread = new Thread(new GetTaskThread(taskqueue, systemconfig, commonModule));
@@ -62,7 +62,7 @@ public class App {
 		LOG.info("Exit...");
 	}
 
-	public static int LoadSystemConfig() {
+	public static int loadSystemConfig() {
 		// 获取配置文件路径，判断文件是否存在
 		String sFilePath = System.getProperty("user.dir").concat("\\conf\\system.conf");
 		File ConfigFile = new File(sFilePath);
@@ -97,7 +97,7 @@ public class App {
 		return 0;
 	}
 
-	public static int LoadCommonModule() {
+	public static int loadCommonModule() {
 		CheckConfig checkconfig = new CheckConfig(systemconfig);
 		ObjectMapper mapper = new ObjectMapper();
 		ModuleInfo module = null;
@@ -141,7 +141,7 @@ public class App {
 		return 0;
 	}
 
-	public static void TestJackson() {
+	public static void testJackson() {
 		TaskInfo task = new TaskInfo();
 		task.taskname = "test";
 		task.priority = 3;
