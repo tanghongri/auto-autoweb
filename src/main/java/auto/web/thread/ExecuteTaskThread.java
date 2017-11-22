@@ -1,12 +1,20 @@
 package auto.web.thread;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.StringTokenizer;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.Cookie;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
@@ -33,6 +41,7 @@ public class ExecuteTaskThread implements Runnable {
 	private SystemConfig systemconfig;
 	private PriorityBlockingQueue<TaskInfo> taskqueue;
 	private HashMap<String, ModuleInfo> commonModule;
+	private String cookiepath = "";
 	//
 	WebDriver driver = null;
 	WebElement element = null;
@@ -43,6 +52,7 @@ public class ExecuteTaskThread implements Runnable {
 		this.taskqueue = taskqueue;
 		this.systemconfig = systemconfig;
 		this.commonModule = commonModule;
+		cookiepath = System.getProperty("user.dir").concat("\\conf\\cookie\\");
 	}
 
 	// 停止任务
@@ -76,6 +86,43 @@ public class ExecuteTaskThread implements Runnable {
 		return by;
 	}
 
+	private int loadCookieFromFile(String sFilePath) {
+		File file = new File(sFilePath);
+		FileReader fr = null;
+		try {
+			fr = new FileReader(file);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		BufferedReader br = new BufferedReader(fr);
+		String line;
+		try {
+			while ((line = br.readLine()) != null) {
+				StringTokenizer str = new StringTokenizer(line, ";");
+				while (str.hasMoreTokens()) {
+					String name = str.nextToken();
+					String value = str.nextToken();
+					String domain = str.nextToken();
+					String path = str.nextToken();
+					Date expiry = null;
+					String dt;
+					if (!(dt = str.nextToken()).equals(null)) {
+						// expiry=new Date(dt);
+						System.out.println();
+					}
+					boolean isSecure = new Boolean(str.nextToken()).booleanValue();
+					Cookie ck = new Cookie(name, value, domain, path, expiry, isSecure);
+					driver.manage().addCookie(ck);
+				}
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return 0;
+	}
+
 	// 执行一个动作
 	private StatusEnum execCmd(CommandInfo cmd) {
 		StatusEnum status = StatusEnum.SUCESS;
@@ -90,6 +137,10 @@ public class ExecuteTaskThread implements Runnable {
 			}
 			break;
 		case GET:
+			// 打开页面读取cookie
+			if (cmd.value.substring(0, 7).equals("cookie:") ) {
+				loadCookieFromFile(cookiepath.concat(cmd.value.substring(7)));
+			}
 			driver.get(cmd.target);
 			break;
 		case PREEL:
@@ -219,7 +270,7 @@ public class ExecuteTaskThread implements Runnable {
 				}
 				LOG.info("init WebDriver: " + systemconfig.browser);
 				wait = new WebDriverWait(driver, 5);
-			
+
 				LOG.info("start task: " + task.taskname);
 
 				for (ModuleInfo module : task.step) {

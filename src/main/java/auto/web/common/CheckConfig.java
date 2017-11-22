@@ -87,6 +87,16 @@ public class CheckConfig {
 					break;
 				}
 				break;
+			case COOKIE:
+				switch (cmd.type) {
+				case READ:
+				case SAVE:
+					break;
+				default:
+					status = StatusEnum.TYPEUNKNOWN;
+					break;
+				}
+				break;
 			default:
 				status = StatusEnum.ACTIONUNKNOWN;
 				break;
@@ -112,7 +122,7 @@ public class CheckConfig {
 				status = CheckCmd(cmd);
 				if (status != StatusEnum.SUCESS) {
 					retstatus = status;
-					LOG.warn("CheckCmd error：" + cmd);
+					LOG.error("CheckCmd error：" + cmd);
 				}
 			}
 		}
@@ -132,7 +142,7 @@ public class CheckConfig {
 				status = CheckModule(module);
 				if (status != StatusEnum.SUCESS) {
 					retstatus = status;
-					LOG.warn("CheckModule error: " + module);
+					LOG.error("CheckModule error: " + module);
 				}
 			}
 		}
