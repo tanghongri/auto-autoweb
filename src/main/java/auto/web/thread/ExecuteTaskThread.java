@@ -1,9 +1,11 @@
 package auto.web.thread;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
@@ -24,6 +26,9 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import auto.web.common.ModuleInfo;
 import auto.web.common.SystemConfig;
@@ -60,6 +65,21 @@ public class ExecuteTaskThread implements Runnable {
 		this.brun = !brun;
 	}
 
+	// 将value中的变量引用转换为实际参数,嵌套处理，存在多重变量引用
+	public String getArgValue(String value) {
+		if (value.length() < 8) {
+			return value;
+		}
+		String sKey = value.substring(0, 7);
+		String sValue = value.substring(7);
+		if (sKey.equals("cookie:")) {// cookie返回文件路径
+			return cookiepath.concat(getArgValue(sValue));
+		} else if (sKey.equals("system:")) {// cookie返回文件路径
+			return systemconfig.args.get(getArgValue(sValue));
+		}
+		return value;
+	}
+
 	private WebElement findTypeElement(CommandInfo cmd) {
 		WebElement element = null;
 		try {
@@ -88,6 +108,10 @@ public class ExecuteTaskThread implements Runnable {
 
 	private int loadCookieFromFile(String sFilePath) {
 		File file = new File(sFilePath);
+		if (!file.exists()) {
+			return -1;
+		}
+
 		FileReader fr = null;
 		try {
 			fr = new FileReader(file);
@@ -123,6 +147,35 @@ public class ExecuteTaskThread implements Runnable {
 		return 0;
 	}
 
+	private int saveCookieToFile(String sFilePath) {
+		File file = new File(sFilePath);
+		try {
+			FileWriter filewriter = new FileWriter(file, false);
+			BufferedWriter bufwriter = new BufferedWriter(filewriter);
+			ObjectMapper mapper = new ObjectMapper();
+			String json = "";
+
+			for (Cookie cookie : driver.manage().getCookies()) {
+				try {
+					json = mapper.writeValueAsString(cookie);
+					bufwriter.write(json);
+					bufwriter.newLine();
+				} catch (JsonProcessingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			bufwriter.flush();
+			bufwriter.close();
+			filewriter.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			System.out.println("cookie write to file");
+		}
+		return 0;
+	}
+
 	// 执行一个动作
 	private StatusEnum execCmd(CommandInfo cmd) {
 		StatusEnum status = StatusEnum.SUCESS;
@@ -138,9 +191,7 @@ public class ExecuteTaskThread implements Runnable {
 			break;
 		case GET:
 			// 打开页面读取cookie
-			if (cmd.value.substring(0, 7).equals("cookie:") ) {
-				loadCookieFromFile(cookiepath.concat(cmd.value.substring(7)));
-			}
+			loadCookieFromFile(getArgValue(cmd.value));
 			driver.get(cmd.target);
 			break;
 		case PREEL:
@@ -192,7 +243,16 @@ public class ExecuteTaskThread implements Runnable {
 			if (element == null) {
 				status = StatusEnum.ELEMENTEMPTY;
 			} else {
-				element.sendKeys(cmd.value);
+				element.sendKeys(getArgValue(cmd.value));
+			}
+			break;
+		case COOKIE:
+			switch (cmd.type) {
+			case SAVE:// 执行公共模板
+				saveCookieToFile(getArgValue(cmd.target));
+				break;
+			default:
+				break;
 			}
 			break;
 		default:
