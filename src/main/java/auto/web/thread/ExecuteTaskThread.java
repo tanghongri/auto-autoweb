@@ -9,6 +9,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.regex.Matcher;
@@ -27,9 +28,13 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.CollectionType;
 
+import auto.web.common.CookieInfo;
 import auto.web.common.ModuleInfo;
 import auto.web.common.SystemConfig;
 import auto.web.common.TaskInfo;
@@ -107,43 +112,37 @@ public class ExecuteTaskThread implements Runnable {
 	}
 
 	private int loadCookieFromFile(String sFilePath) {
-		File file = new File(sFilePath);
-		if (!file.exists()) {
-			return -1;
-		}
 
-		FileReader fr = null;
+		ObjectMapper mapper = new ObjectMapper();
+		File CookieFile = new File(sFilePath);
+		Set<CookieInfo> cookieinfoset;
 		try {
-			fr = new FileReader(file);
-		} catch (FileNotFoundException e) {
+			// 定义序列化类型
+			CollectionType javaType = mapper.getTypeFactory().constructCollectionType(Set.class, CookieInfo.class);
+			cookieinfoset = mapper.readValue(CookieFile, javaType);
+		} catch (JsonParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-		BufferedReader br = new BufferedReader(fr);
-		String line;
-		try {
-			while ((line = br.readLine()) != null) {
-				StringTokenizer str = new StringTokenizer(line, ";");
-				while (str.hasMoreTokens()) {
-					String name = str.nextToken();
-					String value = str.nextToken();
-					String domain = str.nextToken();
-					String path = str.nextToken();
-					Date expiry = null;
-					String dt;
-					if (!(dt = str.nextToken()).equals(null)) {
-						// expiry=new Date(dt);
-						System.out.println();
-					}
-					boolean isSecure = new Boolean(str.nextToken()).booleanValue();
-					Cookie ck = new Cookie(name, value, domain, path, expiry, isSecure);
-					driver.manage().addCookie(ck);
-				}
-			}
+			LOG.error("LoadSystemConfig JsonParseException:" + e.getMessage());
+			return 1;
+		} catch (JsonMappingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			LOG.error("LoadSystemConfig JsonMappingException:" + e.getMessage());
+			return 2;
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			LOG.error("LoadSystemConfig IOException:" + e.getMessage());
+			return 3;
 		}
+		// 加载cookies
+		for (CookieInfo cookieinfo : cookieinfoset) {
+			Cookie cookie = new Cookie(cookieinfo.name, cookieinfo.value, cookieinfo.domain, cookieinfo.path,
+					cookieinfo.expiry, cookieinfo.secure, cookieinfo.httpOnly);
+			driver.manage().addCookie(cookie);
+		}
+
 		return 0;
 	}
 
@@ -155,15 +154,13 @@ public class ExecuteTaskThread implements Runnable {
 			ObjectMapper mapper = new ObjectMapper();
 			String json = "";
 
-			for (Cookie cookie : driver.manage().getCookies()) {
-				try {
-					json = mapper.writeValueAsString(cookie);
-					bufwriter.write(json);
-					bufwriter.newLine();
-				} catch (JsonProcessingException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+			try {
+				json = mapper.writeValueAsString(driver.manage().getCookies());
+				bufwriter.write(json);
+				bufwriter.newLine();
+			} catch (JsonProcessingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 			bufwriter.flush();
 			bufwriter.close();
